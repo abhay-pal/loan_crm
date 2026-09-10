@@ -59,6 +59,18 @@ type SessionRow = {
 };
 
 const STATE_ID = "loan-crm-primary";
+const defaultSettings: CRMState["settings"] = {
+  companyName: "APS Loan CRM",
+  brandInitials: "APS",
+  primaryColor: "#075985",
+  accentColor: "#0f766e",
+  slaDays: 3,
+  autoAssignmentMode: "round-robin",
+  dailyDigestTime: "08:30",
+  emailEnabled: true,
+  browserPushEnabled: false,
+  lastAssignmentIndex: 0,
+};
 
 export function getRuntimeEnv() {
   return env as unknown as RuntimeEnv;
@@ -578,16 +590,7 @@ export function normalizeState(state: CRMState): CRMState {
     rejectionReasons: state.rejectionReasons ?? [],
     lostReasons: state.lostReasons ?? [],
     settings: {
-      companyName: "APS Loan CRM",
-      brandInitials: "APS",
-      primaryColor: "#075985",
-      accentColor: "#0f766e",
-      slaDays: 3,
-      autoAssignmentMode: "round-robin",
-      dailyDigestTime: "08:30",
-      emailEnabled: true,
-      browserPushEnabled: false,
-      lastAssignmentIndex: 0,
+      ...defaultSettings,
       ...(state.settings ?? {}),
     },
     emailTemplates: state.emailTemplates ?? [],

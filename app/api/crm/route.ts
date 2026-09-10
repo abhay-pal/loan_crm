@@ -6,6 +6,7 @@ import type {
   Lead,
   LeadFilters,
   Role,
+  UserStatus,
 } from "@/lib/crm-types";
 import {
   addActivity,
@@ -1426,7 +1427,7 @@ function getLeadOrThrow(state: CRMState, leadId: string, includeDeleted = false)
 function buildNewLead(
   state: CRMState,
   leadPayload: Partial<Lead>,
-  sourceFallback: string,
+  sourceFallback: string | undefined,
   user: CRMUser,
 ): Lead {
   const now = new Date().toISOString();
@@ -1543,6 +1544,8 @@ function validateLeadInput(lead: Partial<Lead>) {
 function normalizeUserInput(input: unknown) {
   const source = (input ?? {}) as Record<string, unknown>;
   const role = roles.includes(source.role as Role) ? (source.role as Role) : "agent";
+  const status: UserStatus =
+    asString(source.status) === "inactive" ? "inactive" : "active";
 
   return {
     id: asString(source.id),
@@ -1552,7 +1555,7 @@ function normalizeUserInput(input: unknown) {
     team: asString(source.team) || "West",
     managerId: asString(source.managerId),
     phone: asString(source.phone),
-    status: asString(source.status) === "inactive" ? "inactive" : "active",
+    status,
     capacityDaily: Math.max(0, Number(source.capacityDaily ?? 15)),
     capacityMonthly: Math.max(0, Number(source.capacityMonthly ?? 250)),
     twoFactorEnabled: Boolean(source.twoFactorEnabled),
