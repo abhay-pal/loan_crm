@@ -57,6 +57,7 @@ import type {
   Role,
   ViewerPermissions,
 } from "@/lib/crm-types";
+import { isStaticPagesRuntime, staticApiRequest } from "./static-crm-demo";
 
 type SafeUser = Omit<CRMUser, "passwordHash">;
 type Screen =
@@ -2634,6 +2635,18 @@ function LeadDrawer({
     form.set("file", documentFile);
 
     try {
+      if (isStaticPagesRuntime()) {
+        await api("addDocument", {
+          leadId: lead.id,
+          checklistItem: documentItem || product?.checklist[0] || "General",
+          fileName: documentFile.name,
+          contentType: documentFile.type,
+          size: documentFile.size,
+        });
+        setDocumentFile(null);
+        return;
+      }
+
       const response = await fetch("/api/crm/documents", {
         method: "POST",
         headers: { authorization: `Bearer ${token}` },
@@ -2658,6 +2671,14 @@ function LeadDrawer({
 
   async function openDocument(documentId: string) {
     try {
+      if (isStaticPagesRuntime()) {
+        showToast(
+          "info",
+          "Document file preview is unavailable in the GitHub Pages demo.",
+        );
+        return;
+      }
+
       const response = await fetch(`/api/crm/documents?id=${encodeURIComponent(documentId)}`, {
         headers: { authorization: `Bearer ${token}` },
       });
@@ -3478,6 +3499,10 @@ async function apiRequest(
   action: string,
   body: Record<string, unknown> = {},
 ) {
+  if (isStaticPagesRuntime()) {
+    return staticApiRequest(token, action, body) as Promise<ApiPayload>;
+  }
+
   const response = await fetch("/api/crm", {
     method: "POST",
     headers: {
